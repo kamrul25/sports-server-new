@@ -52,9 +52,7 @@ async function run() {
     app.post("/jwt", (req, res) => {
       const user = req.body;
 
-      const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
-        expiresIn: "1h",
-      });
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN, );
       res.json({ token });
     });
 
@@ -79,8 +77,36 @@ async function run() {
       res.json(result);
     });
 
+    app.patch('/users/admin/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const body = req.body;
+
+      if(body.role === "admin"){
+        const updateDoc = {
+          $set: {
+            role: "admin",
+          },
+        };
+  
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.json(result);
+      }
+      
+      if(body.role === "instructor"){
+        const updateDoc = {
+          $set: {
+            role: "instructor",
+          },
+        };
+  
+        const result = await userCollection.updateOne(filter, updateDoc);
+        res.json(result);
+      }
+      
+    })
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
