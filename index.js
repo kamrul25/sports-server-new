@@ -63,15 +63,10 @@ async function run() {
     // classes related api
     app.post('/classes', async(req, res)=>{
       const myClass = req.body;
-      const query = { email: myClass.email };
-      const existUser = await classCollection.findOne(query);
-
-      if (existUser) {
-        return res.json({ message: "class already existed" });
-      }
       const result = await classCollection.insertOne(myClass);
       res.json(result)
     })
+
     app.get('/classes', async(req, res)=>{
       const result = await classCollection.find().toArray();
       res.json(result);
@@ -85,6 +80,39 @@ async function run() {
       const result = await classCollection.find(query).toArray();
       res.json(result);
     })
+    
+    app.patch('/classes/admin/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const body= req.body;
+      if(body.status === "approved"){
+        const updateDoc = {
+          $set:{
+            status: "approved",
+            feedback: body.feedback
+          }
+        }
+        const result = await classCollection.updateOne(filter, updateDoc);
+        res.json(result);
+      }
+      if(body.status === "denied"){
+        const updateDoc = {
+          $set:{
+            status: "denied",
+            feedback: body.feedback
+          }
+        }
+        const result = await classCollection.updateOne(filter, updateDoc);
+        res.json(result);
+      }
+    })
+    app.delete('/classes/:id', async(req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await classCollection.deleteOne(query);
+      res.json(result)
+    })
+
     // users related api
     app.get("/users",verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
