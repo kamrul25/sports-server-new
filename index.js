@@ -61,10 +61,20 @@ async function run() {
     const userCollection = client.db("sportsDB").collection("users");
 
     // users related api
-    app.get("/users", async (req, res) => {
+    app.get("/users",verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.json(result);
     });
+    app.get('/users/:email',verifyJWT,  async (req, res) => {
+      const email = req.params.email;
+
+      if (req.decoded.email !== email) {
+        res.json({ error: true, message: "unauthorized access" });
+      }
+      const query = { email: email };
+      const result = await userCollection.findOne(query);
+      res.json(result);
+    })
     app.post("/users", async (req, res) => {
       const user = req.body;
       const query = { email: user.email };
