@@ -59,7 +59,22 @@ async function run() {
     // Connect the client to the server
 
     const userCollection = client.db("sportsDB").collection("users");
+    const classCollection = client.db("sportsDB").collection("classes");
+    // classes related api
 
+    app.post('/classes', async(req, res)=>{
+      const myClass = req.body;
+      const query = { email: myClass.email };
+      const existUser = await classCollection.findOne(query);
+
+      if (existUser) {
+        return res.json({ message: "class already existed" });
+      }
+      const result = await classCollection.insertOne(myClass);
+      res.json(result)
+    })
+
+    
     // users related api
     app.get("/users",verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
