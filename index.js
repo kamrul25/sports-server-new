@@ -61,7 +61,6 @@ async function run() {
     const userCollection = client.db("sportsDB").collection("users");
     const classCollection = client.db("sportsDB").collection("classes");
     // classes related api
-
     app.post('/classes', async(req, res)=>{
       const myClass = req.body;
       const query = { email: myClass.email };
@@ -73,13 +72,25 @@ async function run() {
       const result = await classCollection.insertOne(myClass);
       res.json(result)
     })
-
-    
+    app.get('/classes', async(req, res)=>{
+      const result = await classCollection.find().toArray();
+      res.json(result);
+    })
+    app.get('/classes/:email',verifyJWT, async(req, res)=>{
+      const email = req.params.email;
+      if (req.decoded.email !== email) {
+        res.json({ error: true, message: "unauthorized access" });
+      }
+      const query = { instructorEmail: email };
+      const result = await classCollection.find(query).toArray();
+      res.json(result);
+    })
     // users related api
     app.get("/users",verifyJWT, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.json(result);
     });
+
     app.get('/users/:email',verifyJWT,  async (req, res) => {
       const email = req.params.email;
 
