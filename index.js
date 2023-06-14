@@ -60,6 +60,36 @@ async function run() {
 
     const userCollection = client.db("sportsDB").collection("users");
     const classCollection = client.db("sportsDB").collection("classes");
+    const selectedCollection = client.db("sportsDB").collection("selectedDataByUser")
+
+
+    // selected data related api
+    app.get('/selected/:email',verifyJWT, async(req, res)=>{
+      const email = req.params.email;
+      if(email === req.decoded.email){
+        const query = {userEmail : email}
+        const result = await selectedCollection.find(query).toArray();
+        res.json(result)
+      }
+    })
+ 
+    app.post('/selected', async(req, res)=>{
+      const data = req.body;
+      const query = {classId: data.classId, userEmail: data.userEmail}
+      const exist = await selectedCollection.findOne(query)
+      if (exist) {
+        return res.json({ message: " already selected" });
+      }
+      const result = await selectedCollection.insertOne(data);
+      res.json(result)
+    })
+
+    app.delete('/selected/:id', async(req,res)=>{
+      const id = req.params.id;
+      const query ={_id: new ObjectId(id)}
+      const result = await selectedCollection.deleteOne(query)
+      res.json(result)
+    })
     // classes related api
     app.post('/classes', async(req, res)=>{
       const myClass = req.body;
