@@ -61,7 +61,37 @@ async function run() {
     const userCollection = client.db("sportsDB").collection("users");
     const classCollection = client.db("sportsDB").collection("classes");
     const selectedCollection = client.db("sportsDB").collection("selectedDataByUser")
+    const paymentCollection = client.db("sportsDB").collection("paymentDataByUser")
 
+    // payment related api
+    app.get('/payment/:email', verifyJWT, async(req, res)=>{
+      const email = req.params.email;
+      const query ={userEmail: email}
+      const result = await paymentCollection.find(query).toArray()
+      res.json(result)
+    })
+    app.post('/payment', async(req, res)=>{
+      const data = req.body;
+      const result = await paymentCollection.insertOne(data)
+      res.json(result);
+    })
+
+    app.patch('/classes/payment/:id', async(req, res)=>{
+      const id = req.params.id;
+      const filter = {_id: new ObjectId(id)}
+      const body = req.body;
+      const newEnrolled = parseInt(body.enrolled) + 1;
+      const newSeats = parseInt(body.seats) - parseInt(newEnrolled)
+      const updateDoc = {
+        $set:{
+          enrolled: newEnrolled.toString(),
+          seats: newSeats.toString()
+        }
+      }
+    console.log(updateDoc)
+      const result = await classCollection.updateOne(filter, updateDoc);
+      res.json(result)
+    })
 
     // selected data related api
     app.get('/selected/:email',verifyJWT, async(req, res)=>{
@@ -99,6 +129,11 @@ async function run() {
 
     app.get('/classes',verifyJWT, async(req, res)=>{
       const result = await classCollection.find().toArray();
+      res.json(result);
+    })
+    app.get('/popularClasses', async(req, res)=>{
+      const query ={status: "approved"}
+      const result = await classCollection.find(query).sort({enrolled: -1}).toArray();
       res.json(result);
     })
     app.get('/classes/approved', async(req, res)=>{
