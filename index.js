@@ -67,8 +67,13 @@ async function run() {
       res.json(result)
     })
 
-    app.get('/classes', async(req, res)=>{
+    app.get('/classes',verifyJWT, async(req, res)=>{
       const result = await classCollection.find().toArray();
+      res.json(result);
+    })
+    app.get('/classes/approved', async(req, res)=>{
+      const query ={status: "approved"}
+      const result = await classCollection.find(query).toArray();
       res.json(result);
     })
     app.get('/classes/:email',verifyJWT, async(req, res)=>{
@@ -80,7 +85,7 @@ async function run() {
       const result = await classCollection.find(query).toArray();
       res.json(result);
     })
-    
+
     app.patch('/classes/admin/:id', async(req, res)=>{
       const id = req.params.id;
       const filter = {_id: new ObjectId(id)}
@@ -89,7 +94,6 @@ async function run() {
         const updateDoc = {
           $set:{
             status: "approved",
-            feedback: body.feedback
           }
         }
         const result = await classCollection.updateOne(filter, updateDoc);
@@ -99,13 +103,22 @@ async function run() {
         const updateDoc = {
           $set:{
             status: "denied",
-            feedback: body.feedback
+          }
+        }
+        const result = await classCollection.updateOne(filter, updateDoc);
+        res.json(result);
+      }
+      if(body.feedback ){
+        const updateDoc = {
+          $set:{
+            feedback: body.feedback,
           }
         }
         const result = await classCollection.updateOne(filter, updateDoc);
         res.json(result);
       }
     })
+
     app.delete('/classes/:id', async(req, res)=>{
       const id = req.params.id;
       const query = {_id: new ObjectId(id)}
@@ -119,6 +132,12 @@ async function run() {
       res.json(result);
     });
 
+    app.get('/users/instructor', async(req, res)=>{
+     
+      const query = {role: "instructor"}
+      const result = await userCollection.find(query).toArray();
+      res.json(result)
+    })
     app.get('/users/:email',verifyJWT,  async (req, res) => {
       const email = req.params.email;
 
