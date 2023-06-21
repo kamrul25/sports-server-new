@@ -81,7 +81,7 @@ async function run() {
       const filter = {_id: new ObjectId(id)}
       const body = req.body;
       const newEnrolled = parseInt(body.enrolled) + 1;
-      const newSeats = parseInt(body.seats) - parseInt(newEnrolled)
+      const newSeats = parseInt(body.seats) - 1;
       const updateDoc = {
         $set:{
           enrolled: newEnrolled.toString(),
